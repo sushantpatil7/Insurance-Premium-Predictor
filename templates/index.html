@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css">
+    <title>Insurance Premium Predictor</title>
+  </head>
+  <body class="bg-dark">
+    <div class="container mt-5">
+      <div class="row">
+        <div class="card">
+          <div class="card-header text-center">
+            <h1>Welcome To Insurance Premium Calculator</h1>
+          </div>
+
+          <div class="card-body">
+            <form id="premiumForm">
+
+              <div class="form-group mb-3">
+                <label for="age">Enter Age Of The Customer</label>
+                <input type="number" class="form-control" id="age" name="age" placeholder="Enter Age Of The Customer">
+                <small class="text-danger" id="ageError"></small>
+              </div>
+
+              <div class="form-group mb-3">
+                <label for="sex">Select Gender Of The Customer</label>
+                <select class="form-control" id="sex" name="sex">
+                  <option value="">Select Gender</option>
+                  {% for type in sex %}
+                    <option value="{{ type }}">{{ type }}</option>
+                  {% endfor %}
+                </select>
+                <small class="text-danger" id="sexError"></small>
+              </div>
+
+              <div class="form-group mb-3">
+                <label for="bmi">Enter BMI Value Of The Customer</label>
+                <input type="number" step="0.1" class="form-control" id="bmi" name="bmi" placeholder="Enter BMI Value Of The Customer">
+                <small class="text-danger" id="bmiError"></small>
+              </div>
+
+              <div class="form-group mb-3">
+                <label for="children">Enter Number Of The Children</label>
+                <input type="number" class="form-control" id="children" name="children" placeholder="Enter Number Of The Children">
+                <small class="text-danger" id="childrenError"></small>
+              </div>
+
+              <div class="form-group mb-3">
+                <label for="smoker">Select Type Of The Customer (Smoker)</label>
+                <select class="form-control" id="smoker" name="smoker">
+                  <option value="">Select Smoker Status</option>
+                  {% for type in smoker %}
+                    <option value="{{ type }}">{{ type }}</option>
+                  {% endfor %}
+                </select>
+                <small class="text-danger" id="smokerError"></small>
+              </div>
+
+              <div class="form-group mb-3">
+                <label for="region">Select Region Of The Customer</label>
+                <select class="form-control" id="region" name="region">
+                  <option value="">Select Region</option>
+                  {% for Region in region %}
+                    <option value="{{ Region }}">{{ Region }}</option>
+                  {% endfor %}
+                </select>
+                <small class="text-danger" id="regionError"></small>
+              </div>
+
+              <div class="form-group text-center">
+                <button type="submit" class="btn btn-primary" onclick="validateForm(event)">Predict Premium</button>
+              </div>
+            </form>
+
+            <div class="row mt-4">
+              <div class="col-12 text-center">
+                <h3><span id="prediction"></span></h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function validateForm(event) {
+        event.preventDefault();
+
+        // Clear any previous error messages
+        document.getElementById('ageError').innerHTML = "";
+        document.getElementById('sexError').innerHTML = "";
+        document.getElementById('bmiError').innerHTML = "";
+        document.getElementById('childrenError').innerHTML = "";
+        document.getElementById('smokerError').innerHTML = "";
+        document.getElementById('regionError').innerHTML = "";
+
+        // Get form values
+        var age = document.getElementById('age').value;
+        var sex = document.getElementById('sex').value;
+        var bmi = document.getElementById('bmi').value;
+        var children = document.getElementById('children').value;
+        var smoker = document.getElementById('smoker').value;
+        var region = document.getElementById('region').value;
+
+        var isValid = true;
+
+        // Custom validation for each field
+        if (age === "" || age <= 0) {
+          document.getElementById('ageError').innerHTML = "Please enter a valid age (greater than 0).";
+          isValid = false;
+        }
+
+        if (sex === "") {
+          document.getElementById('sexError').innerHTML = "Please select a gender.";
+          isValid = false;
+        }
+
+        if (bmi === "" || bmi <= 0 || bmi > 50) {
+          document.getElementById('bmiError').innerHTML = "Please enter a valid BMI value (1-50).";
+          isValid = false;
+        }
+
+        if (children === "" || children < 0) {
+          document.getElementById('childrenError').innerHTML = "Please enter a valid number of children.";
+          isValid = false;
+        }
+
+        if (smoker === "") {
+          document.getElementById('smokerError').innerHTML = "Please select smoker status.";
+          isValid = false;
+        }
+
+        if (region === "") {
+          document.getElementById('regionError').innerHTML = "Please select a region.";
+          isValid = false;
+        }
+
+        // If all fields are valid, proceed with form submission
+        if (isValid) {
+          send_data();
+        }
+      }
+
+      function send_data() {
+        var form = document.getElementById('premiumForm');
+        var fd = new FormData(form);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', '/predict', true);
+        document.getElementById("prediction").innerHTML = "Wait! Predicting Premium...";
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState == XMLHttpRequest.DONE) {
+            document.getElementById("prediction").innerHTML = "Premium: " + xhr.responseText;
+          }
+        };
+
+        xhr.send(fd);
+      }
+    </script>
+  </body>
+</html>
